@@ -1,14 +1,12 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { APP_GUARD } from '@nestjs/core';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { User } from './users/entities/user.entity';
 import { RefreshToken } from './auth/entities/auth.entity';
 import { UsersModule } from './users/users.module';
 import { AuthModule } from './auth/auth.module';
-import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
 
 const isDevelopment = process.env.NODE_ENV !== 'production';
 
@@ -117,13 +115,6 @@ function shouldUseSsl(hostOrUrl: string, dbSsl: boolean): boolean {
     AuthModule,
   ],
   controllers: [AppController],
-  providers: [
-    AppService,
-    // JwtAuthGuard를 global provider로 등록 (순환 의존성 방지)
-    {
-      provide: APP_GUARD,
-      useClass: JwtAuthGuard,
-    },
-  ],
+  providers: [AppService],
 })
 export class AppModule {}

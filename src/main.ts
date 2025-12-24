@@ -10,8 +10,10 @@ async function bootstrap() {
 
     // CORS 설정
     app.enableCors({
-      origin: configService.get<string>('CORS_ORIGIN') || '*',
+      origin: configService.get<string>('CORS_ORIGIN') || 'http://localhost:3000',
       credentials: true,
+      methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+      allowedHeaders: ['Content-Type', 'Authorization'],
     });
 
     // 글로벌 검증 파이프

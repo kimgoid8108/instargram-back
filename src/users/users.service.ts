@@ -63,8 +63,20 @@ export class UsersService {
     return this.usersRepository.findOne({ where: { email } });
   }
 
+  async findByNickname(nickname: string): Promise<User | null> {
+    return this.usersRepository.findOne({ where: { nickname } });
+  }
+
   async update(id: number, updateUserDto: UpdateUserDto): Promise<User> {
     const user = await this.findOne(id);
+
+    // 닉네임 변경 시 중복 체크
+    if (updateUserDto.nickname && updateUserDto.nickname !== user.nickname) {
+      const existingNickname = await this.findByNickname(updateUserDto.nickname);
+      if (existingNickname && existingNickname.id !== id) {
+        throw new ConflictException('이미 존재하는 닉네임입니다.');
+      }
+    }
 
     if (updateUserDto.hashed_password) {
       updateUserDto.hashed_password = await bcrypt.hash(
