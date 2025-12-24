@@ -13,9 +13,9 @@ import { JwtAuthGuard } from './guards/jwt-auth.guard';
     TypeOrmModule.forFeature([RefreshToken]),
     UsersModule,
     JwtModule.registerAsync({
+      global: true, // 모든 모듈에서 JwtService 사용 가능
       imports: [ConfigModule],
       useFactory: (configService: ConfigService) => {
-        // 환경 변수 로드 확인 (디버깅용)
         const jwtSecret = configService.get<string>('JWT_SECRET');
         const nodeEnv = configService.get<string>('NODE_ENV');
 
@@ -23,7 +23,6 @@ import { JwtAuthGuard } from './guards/jwt-auth.guard';
           console.log('\n🔍 JWT 환경 변수 확인:');
           console.log(`  NODE_ENV: ${nodeEnv || 'undefined'}`);
           console.log(`  JWT_SECRET: ${jwtSecret ? '***설정됨***' : '❌ 없음'}`);
-          console.log(`  process.env.JWT_SECRET: ${process.env.JWT_SECRET ? '***설정됨***' : '❌ 없음'}`);
         }
 
         if (!jwtSecret) {
@@ -45,6 +44,6 @@ import { JwtAuthGuard } from './guards/jwt-auth.guard';
   ],
   controllers: [AuthController],
   providers: [AuthService, JwtAuthGuard],
-  exports: [JwtAuthGuard],
+  exports: [JwtAuthGuard, JwtModule], // JwtModule도 export하여 다른 모듈에서 사용 가능하게
 })
 export class AuthModule {}
