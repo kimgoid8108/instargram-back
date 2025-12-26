@@ -7,6 +7,7 @@ import {
   OneToMany,
 } from 'typeorm';
 import { RefreshToken } from '../../auth/entities/auth.entity';
+import { Post } from '../../posts/entities/post.entity';
 
 @Entity('users', { schema: 'instagram' })
 export class User {
@@ -37,4 +38,7 @@ export class User {
 
   @OneToMany(() => RefreshToken, (refreshToken) => refreshToken.user)
   refresh_tokens: RefreshToken[];
+
+  @OneToMany(() => Post, (post) => post.user)
+  posts: Post[];
 }

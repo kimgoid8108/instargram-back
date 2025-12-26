@@ -5,8 +5,10 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { User } from './users/entities/user.entity';
 import { RefreshToken } from './auth/entities/auth.entity';
+import { Post } from './posts/entities/post.entity';
 import { UsersModule } from './users/users.module';
 import { AuthModule } from './auth/auth.module';
+import { PostsModule } from './posts/posts.module';
 
 const isDevelopment = process.env.NODE_ENV !== 'production';
 
@@ -53,7 +55,7 @@ function shouldUseSsl(hostOrUrl: string, dbSsl: boolean): boolean {
             type: 'postgres',
             url: databaseUrl,
             schema: 'instagram',
-            entities: [User, RefreshToken],
+            entities: [User, RefreshToken, Post],
             synchronize: false,
             logging: isDevelopment ? ['error', 'warn'] : ['error'],
             ssl: requiresSsl ? { rejectUnauthorized: false } : false,
@@ -95,7 +97,7 @@ function shouldUseSsl(hostOrUrl: string, dbSsl: boolean): boolean {
           password: dbPassword,
           database: dbDatabase,
           schema: 'instagram',
-          entities: [User, RefreshToken],
+          entities: [User, RefreshToken, Post],
           synchronize: false,
           logging: isDevelopment ? ['error', 'warn'] : ['error'],
           ssl: requiresSsl ? { rejectUnauthorized: false } : false,
@@ -113,6 +115,7 @@ function shouldUseSsl(hostOrUrl: string, dbSsl: boolean): boolean {
     }),
     UsersModule,
     AuthModule,
+    PostsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
