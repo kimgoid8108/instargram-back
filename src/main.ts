@@ -8,9 +8,20 @@ async function bootstrap() {
     const app = await NestFactory.create(AppModule);
     const configService = app.get(ConfigService);
 
-    // CORS 설정
+    // CORS 설정 - 여러 origin 허용
+    const corsOrigin = configService.get<string>('CORS_ORIGIN');
+    let allowedOrigins: string[] | string | boolean;
+
+    if (corsOrigin) {
+      // 쉼표로 구분된 여러 origin 지원
+      allowedOrigins = corsOrigin.split(',').map(origin => origin.trim());
+    } else {
+      // 개발 환경 기본값
+      allowedOrigins = process.env.NODE_ENV === 'production' ? true : 'http://localhost:3000';
+    }
+
     app.enableCors({
-      origin: configService.get<string>('CORS_ORIGIN') || 'http://localhost:3000',
+      origin: allowedOrigins,
       credentials: true,
       methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
       allowedHeaders: ['Content-Type', 'Authorization'],
@@ -31,10 +42,16 @@ async function bootstrap() {
     const port = configService.get<number>('PORT') || 3001;
     await app.listen(port);
 
-    if (process.env.NODE_ENV !== 'production') {
-      console.log(`\n✅ 서버가 성공적으로 시작되었습니다!`);
-      console.log(`📡 포트: http://localhost:${port}\n`);
+    // 서버 시작 로그 (프로덕션에서도 출력)
+    console.log(`\n✅ 서버가 성공적으로 시작되었습니다!`);
+    console.log(`📡 포트: ${port}`);
+    console.log(`🌍 환경: ${process.env.NODE_ENV || 'development'}`);
+    if (corsOrigin) {
+      console.log(`🔒 CORS 허용 Origin: ${Array.isArray(allowedOrigins) ? allowedOrigins.join(', ') : allowedOrigins}`);
+    } else {
+      console.log(`🔒 CORS: 모든 Origin 허용 (프로덕션)`);
     }
+    console.log(`📋 헬스 체크: GET /\n`);
   } catch (error) {
     console.error('\n❌ 서버 시작 실패:', error.message);
     if (process.env.NODE_ENV !== 'production') {
