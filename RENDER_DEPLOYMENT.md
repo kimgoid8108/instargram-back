@@ -9,15 +9,17 @@
 ```json
 {
   "scripts": {
-    "build": "npx nest build",
-    "start": "node dist/src/main.js"
+    "build": "nest build",
+    "start": "node dist/main.js"
   }
 }
 ```
 
 **중요 사항:**
 - `build`: NestJS 프로젝트를 빌드하여 `dist` 폴더에 컴파일된 JavaScript 파일 생성
-- `start`: 빌드된 파일을 실행 (경로는 실제 빌드 출력에 맞춰야 함)
+  - `@nestjs/cli`가 `dependencies`에 포함되어 있어야 함 (Render는 전역 패키지를 사용하지 않음)
+  - `npx` 없이 `nest build` 직접 실행
+- `start`: 빌드된 파일을 실행 (`dist/main.js`)
 - Render는 자동으로 `npm install` → `npm run build` → `npm start` 순서로 실행
 
 ### 2. 빌드 출력 경로 확인
@@ -25,14 +27,32 @@
 NestJS 빌드 후 다음 경로에 `main.js`가 생성되는지 확인:
 
 ```
-dist/src/main.js  ✅ (현재 설정)
+dist/main.js  ✅ (현재 설정)
 ```
 
 **확인 방법:**
 ```bash
 # 로컬에서 빌드 테스트
 npm run build
-ls -la dist/src/main.js
+ls -la dist/main.js
+```
+
+### 2.1 Node.js 버전 고정
+
+`.nvmrc` 파일과 `package.json`의 `engines` 필드로 Node.js 20으로 고정:
+
+```json
+{
+  "engines": {
+    "node": ">=20.0.0 <21.0.0",
+    "npm": ">=10.0.0"
+  }
+}
+```
+
+`.nvmrc` 파일:
+```
+20
 ```
 
 ### 3. Render 서비스 설정
@@ -57,6 +77,8 @@ npm install && npm run build
 ```
 npm start
 ```
+
+**Node Version**: `20` (`.nvmrc` 파일 또는 Render 설정에서 지정)
 
 **Root Directory**:
 ```
@@ -186,17 +208,26 @@ https://your-service.onrender.com
 
 ### 문제 1: `npm error could not determine executable to run`
 
-**원인**: `package.json`의 `start` 스크립트가 잘못된 경로를 참조
+**원인**:
+- `@nestjs/cli`가 `devDependencies`에만 있어서 프로덕션 빌드 시 사용 불가
+- `npx nest build` 사용 시 Render 환경에서 실행 파일을 찾을 수 없음
 
 **해결**:
-1. 로컬에서 빌드 실행: `npm run build`
-2. 빌드 출력 경로 확인: `ls dist/src/main.js`
-3. `package.json`의 `start` 스크립트를 실제 경로에 맞게 수정
+1. `@nestjs/cli`를 `dependencies`로 이동
+2. `build` 스크립트를 `nest build`로 변경 (`npx` 제거)
+3. 로컬에서 빌드 실행: `npm run build`
+4. 빌드 출력 경로 확인: `ls dist/main.js`
+5. `package.json`의 `start` 스크립트를 실제 경로에 맞게 수정
 
 ```json
 {
+  "dependencies": {
+    "@nestjs/cli": "^11.0.14",
+    // ... 기타 dependencies
+  },
   "scripts": {
-    "start": "node dist/src/main.js"  // 실제 빌드 출력 경로
+    "build": "nest build",  // npx 제거
+    "start": "node dist/main.js"  // 실제 빌드 출력 경로
   }
 }
 ```
